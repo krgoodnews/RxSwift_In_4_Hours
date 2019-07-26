@@ -19,12 +19,43 @@ class ViewController: UITableViewController {
         super.viewDidLoad()
     }
 
+  func output(_ s: Any) {
+    print(s)
+  }
+
     @IBAction func exJust1() {
-        Observable.just("Hello World")
-            .subscribe(onNext: { str in
-                print(str)
-            })
-            .disposed(by: disposeBag)
+//        Observable.just("Hello World")
+//            .subscribe(onNext: { str in
+//                print(str)
+//            })
+//            .disposed(by: disposeBag)
+
+//      Observable.from(["RxSwift", "In", "4", "Hours"])
+//        .single()
+//        .subscribe { (event) in
+//          switch event {
+//          case .next(let str):
+//            print("next:", str)
+//            break
+//          case .error(let err):
+//            print("err:", err)
+//            break
+//          case .completed:
+//            print("completed")
+//            break
+//
+//          }
+//      }.disposed(by: disposeBag)
+      Observable.from(["RxSwift", "In", "4", "Hours"])
+        .subscribe(onNext: output,
+                   onError: { err in
+                    print("err:", err)
+        }, onCompleted: {
+          print("completed")
+        }) {
+          print("disposed")
+      }.disposed(by: disposeBag)
+
     }
 
     @IBAction func exJust2() {
