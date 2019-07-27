@@ -13,9 +13,16 @@ import UIKit
 class ViewController: UIViewController {
   var disposeBag = DisposeBag()
 
+  let idInputText = BehaviorSubject(value: "")
+  let idValid = BehaviorSubject(value: false)
+
+  let pwInputText = BehaviorSubject(value: "")
+  let pwValid = BehaviorSubject(value: false)
+
   override func viewDidLoad() {
     super.viewDidLoad()
-    bindUI()
+    bindInput()
+    bindOutput()
   }
 
   // MARK: - IBOutlet
@@ -28,32 +35,45 @@ class ViewController: UIViewController {
 
   // MARK: - Bind UI
 
-  private func bindUI() {
-    // id input +--> check valid --> bullet
-    //          |
-    //          +--> button enable
-    //          |
-    // pw input +--> check valid --> bullet
-
+  /// 들어오는 입력을 Subject에 저장한다.
+  private func bindInput() {
     // input: 아이디, 비번 입력
-    let idInputOb: Observable<String> = idField.rx.text.orEmpty.asObservable()
-    let idValidOb = idInputOb.map(checkEmailValid)
+    idField.rx.text.orEmpty
+      .bind(to: idInputText)
+      .disposed(by: disposeBag)
 
-    let pwInputOb: Observable<String> = pwField.rx.text.orEmpty.asObservable()
-    let pwValidOb = pwInputOb.map(checkPasswordValid)
+    idInputText
+      .map(checkEmailValid)
+      .bind(to: idValid)
+      .disposed(by: disposeBag)
 
+    pwField.rx.text.orEmpty
+      .bind(to: pwInputText)
+      .disposed(by: disposeBag)
+
+    pwInputText
+      .map(checkPasswordValid)
+      .bind(to: pwValid)
+      .disposed(by: disposeBag)
+  }
+
+  /// Subject의 value를 이용해 View의 아웃풋을 지정한다.
+  private func bindOutput() {
     // output: 불릿, 로그인 버튼 enable
-    idValidOb.subscribe(onNext: {
+    idValid.subscribe(onNext: {
       self.idValidView.isHidden = $0
     }).disposed(by: disposeBag)
 
-    pwValidOb.subscribe(onNext: {
+    pwValid.subscribe(onNext: {
       self.pwValidView.isHidden = $0
     }).disposed(by: disposeBag)
 
-    Observable.combineLatest(idValidOb, pwValidOb, resultSelector: { $0 && $1 })
+    Observable.combineLatest(idValid, pwValid, resultSelector: { $0 && $1 })
       .subscribe(onNext: { self.loginButton.isEnabled = $0})
       .disposed(by: disposeBag)
+
+
+
 
 //    idField.rx.text.orEmpty
 //      .map(checkEmailValid)
